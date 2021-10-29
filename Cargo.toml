@@ -1,0 +1,15 @@
+[package]
+name = "xzibot"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+anyhow = "1.0"
+figment = { version = "0.10", features = ["toml", "env"] }
+tokio = { version = "1", features = ["full"] }
+serenity = { version = "0.10", features = ["unstable_discord_api"] }
+url = "2.2"
+ureq = { version = "2.3", features = ["json"] }
+serde = "1.0"
+chrono = "0.4"
+chrono-humanize = "0.2"
