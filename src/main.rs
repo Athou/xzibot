@@ -1,6 +1,7 @@
 use crate::commands::blague::BlagueCommand;
 use crate::commands::episodes::EpisodesCommand;
 use crate::commands::google_image::GoogleImageCommand;
+use crate::commands::horoscope::HoroscopeCommand;
 use crate::commands::youtube::YoutubeCommand;
 use crate::handler::Handler;
 use crate::utils::google::GoogleSearcher;
@@ -41,15 +42,16 @@ async fn main() {
     });
 
     let mut slash_commands: Vec<Box<dyn SlashCommand>> = Vec::new();
+    slash_commands.push(Box::new(BlagueCommand {
+        blagues_api_token: config.blagues_api_token,
+    }));
+    slash_commands.push(Box::new(EpisodesCommand {}));
     slash_commands.push(Box::new(GoogleImageCommand {
         google_searcher: google_searcher.clone(),
     }));
+    slash_commands.push(Box::new(HoroscopeCommand {}));
     slash_commands.push(Box::new(YoutubeCommand {
         google_searcher: google_searcher.clone(),
-    }));
-    slash_commands.push(Box::new(EpisodesCommand {}));
-    slash_commands.push(Box::new(BlagueCommand {
-        blagues_api_token: config.blagues_api_token,
     }));
 
     let handler = Handler { slash_commands };

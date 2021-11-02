@@ -13,3 +13,4 @@ ureq = { version = "2.3", features = ["json"] }
 serde = "1.0"
 chrono = "0.4"
 chrono-humanize = "0.2"
+scraper = "0.12"

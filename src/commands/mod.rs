@@ -5,6 +5,7 @@ use serenity::model::prelude::application_command::ApplicationCommandInteraction
 pub mod blague;
 pub mod episodes;
 pub mod google_image;
+pub mod horoscope;
 pub mod youtube;
 
 pub trait SlashCommand: Send + Sync {
