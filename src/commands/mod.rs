@@ -10,6 +10,7 @@ pub mod connerie;
 pub mod episodes;
 pub mod google_image;
 pub mod horoscope;
+pub mod skandite;
 pub mod youtube;
 
 pub trait SlashCommand: Send + Sync {

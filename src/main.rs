@@ -3,6 +3,7 @@ use crate::commands::connerie::ConnerieCommand;
 use crate::commands::episodes::EpisodesCommand;
 use crate::commands::google_image::GoogleImageCommand;
 use crate::commands::horoscope::HoroscopeCommand;
+use crate::commands::skandite::SkanditeCommand;
 use crate::commands::youtube::YoutubeCommand;
 use crate::commands::MessageCommand;
 use crate::handler::Handler;
@@ -19,7 +20,6 @@ use sqlx::MySqlPool;
 use std::sync::Arc;
 
 mod commands;
-mod db;
 mod handler;
 mod utils;
 
@@ -64,6 +64,9 @@ async fn main() {
     let mut message_commands: Vec<Box<dyn MessageCommand>> = Vec::new();
     message_commands.push(Box::new(ConnerieCommand {
         bot_name: config.bot_name,
+        db_pool: db_pool.clone(),
+    }));
+    message_commands.push(Box::new(SkanditeCommand {
         db_pool: db_pool.clone(),
     }));
 

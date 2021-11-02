@@ -1,7 +1,6 @@
-use crate::db::models::Connerie;
+use crate::utils::extract_url;
 use crate::MessageCommand;
 use anyhow::Error;
-use linkify::LinkFinder;
 use rand::Rng;
 use serenity::async_trait;
 use serenity::client::Context;
@@ -11,6 +10,13 @@ use sqlx::MySqlPool;
 use std::sync::Arc;
 
 const PROC_PERCENTAGE: u8 = 3;
+
+#[derive(sqlx::FromRow)]
+pub struct Connerie {
+    pub id: i64,
+    pub value: String,
+    pub author: Option<String>,
+}
 
 pub struct ConnerieCommand {
     pub bot_name: String,
@@ -88,7 +94,5 @@ impl MessageCommand for ConnerieCommand {
 }
 
 fn has_url(input: &str) -> bool {
-    let finder = LinkFinder::new();
-    let links: Vec<_> = finder.links(input).collect();
-    !links.is_empty()
+    extract_url(input).is_some()
 }

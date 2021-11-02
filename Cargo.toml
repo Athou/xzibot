@@ -9,11 +9,16 @@ chrono = "0.4"
 chrono-humanize = "0.2"
 figment = { version = "0.10", features = ["toml", "env"] }
 linkify = "0.7"
+normalize_url = "0.2"
 rand = "0.8"
 scraper = "0.12"
 serde = "1.0"
 serenity = { version = "0.10", features = ["unstable_discord_api"] }
-sqlx = { version = "0.5", features = ["mysql", "runtime-tokio-rustls"] }
+sqlx = { version = "0.5", features = [
+    "mysql",
+    "chrono",
+    "runtime-tokio-rustls",
+] }
 tokio = { version = "1", features = ["full"] }
 ureq = { version = "2.3", features = ["json"] }
 url = "2.2"
