@@ -1,3 +1,4 @@
+use crate::MessageCommand;
 use crate::SlashCommand;
 use serenity::async_trait;
 use serenity::client::Context;
@@ -10,16 +11,27 @@ use serenity::model::interactions::InteractionResponseType;
 
 pub struct Handler {
     pub slash_commands: Vec<Box<dyn SlashCommand>>,
+    pub message_commands: Vec<Box<dyn MessageCommand>>,
 }
 
 #[async_trait]
 impl EventHandler for Handler {
-    async fn message(&self, _ctx: Context, msg: Message) {
-        if msg.author.bot {
+    async fn message(&self, ctx: Context, message: Message) {
+        if message.author.bot {
             return;
         }
 
-        println!("message: {}", msg.content)
+        for boxed_message_command in &self.message_commands {
+            let message_command = &*boxed_message_command;
+            let result = message_command.handle(&ctx, &message);
+            match result.await {
+                Err(e) => println!("error while executing message command : {}", e),
+                Ok(None) => {}
+                Ok(Some(r)) => {
+                    message.channel_id.say(&ctx.http, r).await.unwrap();
+                }
+            }
+        }
     }
 
     async fn ready(&self, ctx: Context, ready: Ready) {

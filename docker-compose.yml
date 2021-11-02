@@ -1,0 +1,22 @@
+version: "3.1"
+
+services:
+  mysql:
+    image: mariadb
+    environment:
+      - MYSQL_ROOT_PASSWORD=root
+      - MYSQL_DATABASE=xzibot
+    ports:
+      - 3306:3306
+    volumes:
+      - ./database/mysql:/var/lib/mysql
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    container_name: phpmyadmin
+    environment:
+      - PMA_HOST=mysql
+      - UPLOAD_LIMIT=300M
+    ports:
+      - 8010:80
+    volumes:
+      - ./database/phpmyadmin:/sessions

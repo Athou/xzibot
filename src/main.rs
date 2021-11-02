@@ -1,8 +1,10 @@
 use crate::commands::blague::BlagueCommand;
+use crate::commands::connerie::ConnerieCommand;
 use crate::commands::episodes::EpisodesCommand;
 use crate::commands::google_image::GoogleImageCommand;
 use crate::commands::horoscope::HoroscopeCommand;
 use crate::commands::youtube::YoutubeCommand;
+use crate::commands::MessageCommand;
 use crate::handler::Handler;
 use crate::utils::google::GoogleSearcher;
 use commands::SlashCommand;
@@ -13,14 +15,18 @@ use figment::Figment;
 use serde::Deserialize;
 use serenity::client::Client;
 use serenity::framework::StandardFramework;
+use sqlx::MySqlPool;
 use std::sync::Arc;
 
 mod commands;
+mod db;
 mod handler;
 mod utils;
 
 #[derive(Deserialize)]
 struct Config {
+    bot_name: String,
+    database_url: String,
     discord_token: String,
     discord_application_id: u64,
     google_key: String,
@@ -36,6 +42,7 @@ async fn main() {
         .extract()
         .unwrap();
 
+    let db_pool = Arc::new(MySqlPool::connect(&config.database_url).await.unwrap());
     let google_searcher = Arc::new(GoogleSearcher {
         google_key: config.google_key,
         google_cse_id: config.google_cse_id,
@@ -54,7 +61,16 @@ async fn main() {
         google_searcher: google_searcher.clone(),
     }));
 
-    let handler = Handler { slash_commands };
+    let mut message_commands: Vec<Box<dyn MessageCommand>> = Vec::new();
+    message_commands.push(Box::new(ConnerieCommand {
+        bot_name: config.bot_name,
+        db_pool: db_pool.clone(),
+    }));
+
+    let handler = Handler {
+        slash_commands,
+        message_commands,
+    };
 
     let mut client = Client::builder(config.discord_token)
         .event_handler(handler)
