@@ -71,8 +71,8 @@ impl ConnerieCommand {
         if count <= 0 {
             Ok(None)
         } else {
-            let id = rand::thread_rng().gen_range(1..=count);
-            let connerie = sqlx::query_as::<_, Connerie>("SELECT * FROM Connerie WHERE id = ?")
+            let id = rand::thread_rng().gen_range(0..count);
+            let connerie = sqlx::query_as::<_, Connerie>("SELECT * FROM Connerie LIMIT 1 OFFSET ?")
                 .bind(&id)
                 .fetch_one(&*self.db_pool)
                 .await?;
