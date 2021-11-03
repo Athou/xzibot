@@ -2473,6 +2473,7 @@ dependencies = [
  "linkify",
  "normalize_url",
  "rand 0.8.4",
+ "regex",
  "scraper",
  "serde",
  "serenity",

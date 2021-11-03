@@ -2,6 +2,7 @@ use crate::utils::extract_url;
 use crate::MessageCommand;
 use anyhow::Error;
 use rand::Rng;
+use regex::Regex;
 use serenity::async_trait;
 use serenity::client::Context;
 use serenity::model::prelude::Message;
@@ -31,7 +32,8 @@ impl ConnerieCommand {
             && message.mention_roles.is_empty()
             && message.mention_channels.is_empty()
             && message.mentions.is_empty()
-            && !has_url(&message.content);
+            && !has_url(&message.content)
+            && !contains_emoji(&message.content);
         Ok(trigger)
     }
 
@@ -105,4 +107,9 @@ impl MessageCommand for ConnerieCommand {
 
 fn has_url(input: &str) -> bool {
     extract_url(input).is_some()
+}
+
+fn contains_emoji(input: &str) -> bool {
+    let re = Regex::new(r"\p{Emoji}").unwrap();
+    re.is_match(input)
 }
