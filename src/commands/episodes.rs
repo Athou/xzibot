@@ -20,7 +20,7 @@ struct TVMazeSearch {
 
 #[derive(Deserialize)]
 struct TVMazeExternals {
-    imdb: String,
+    imdb: Option<String>,
 }
 
 #[derive(Deserialize)]
@@ -31,8 +31,8 @@ struct TVMazeEmbedded {
 #[derive(Deserialize)]
 struct TVMazeEpisode {
     name: String,
-    season: u8,
-    number: u8,
+    season: u32,
+    number: u32,
     airstamp: Option<DateTime<Utc>>,
 }
 
@@ -84,10 +84,13 @@ impl SlashCommand for EpisodesCommand {
         match ureq::get(&url).call() {
             Ok(r) => {
                 let search_result = r.into_json::<TVMazeSearch>()?;
-                lines.push(format!(
-                    "{} <http://www.imdb.com/title/{}>",
-                    search_result.name, search_result.externals.imdb
-                ));
+                match search_result.externals.imdb {
+                    None => lines.push(search_result.name),
+                    Some(imdb) => lines.push(format!(
+                        "{} <http://www.imdb.com/title/{}>",
+                        search_result.name, imdb
+                    )),
+                }
 
                 let (previous, next) =
                     find_previous_and_next_episodes(&search_result.embedded.episodes);
