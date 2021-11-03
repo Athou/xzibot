@@ -7,6 +7,7 @@ use serenity::client::Context;
 use serenity::model::prelude::Message;
 use sqlx::mysql::MySqlQueryResult;
 use sqlx::MySqlPool;
+use sqlx::Row;
 use std::sync::Arc;
 
 const PROC_PERCENTAGE: u8 = 3;
@@ -51,8 +52,7 @@ impl ConnerieCommand {
         if self.mentions_me(ctx, message).await? {
             Ok(true)
         } else {
-            let mut rng = rand::thread_rng();
-            Ok(rng.gen_range(1..100) <= PROC_PERCENTAGE)
+            Ok(rand::thread_rng().gen_range(1..100) <= PROC_PERCENTAGE)
         }
     }
 
@@ -61,11 +61,21 @@ impl ConnerieCommand {
         _ctx: &Context,
         _message: &Message,
     ) -> Result<Option<String>, Error> {
-        let connerie =
-            sqlx::query_as::<_, Connerie>("SELECT * FROM Connerie ORDER BY RAND() LIMIT 1")
+        let count: i64 = sqlx::query("SELECT count(*) from Connerie")
+            .fetch_one(&*self.db_pool)
+            .await?
+            .get(0);
+
+        if count <= 0 {
+            Ok(None)
+        } else {
+            let id = rand::thread_rng().gen_range(1..=count);
+            let connerie = sqlx::query_as::<_, Connerie>("SELECT * FROM Connerie WHERE id = ?")
+                .bind(&id)
                 .fetch_one(&*self.db_pool)
                 .await?;
-        Ok(Some(connerie.value))
+            Ok(Some(connerie.value))
+        }
     }
 
     async fn mentions_me(&self, ctx: &Context, message: &Message) -> Result<bool, Error> {
