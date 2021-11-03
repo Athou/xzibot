@@ -8,6 +8,7 @@ use serenity::model::prelude::Message;
 pub mod blague;
 pub mod buzz;
 pub mod connerie;
+pub mod eight_ball;
 pub mod episodes;
 pub mod google;
 pub mod google_image;

@@ -1,6 +1,7 @@
 use crate::commands::blague::BlagueCommand;
 use crate::commands::buzz::BuzzCommand;
 use crate::commands::connerie::ConnerieCommand;
+use crate::commands::eight_ball::EightBallCommand;
 use crate::commands::episodes::EpisodesCommand;
 use crate::commands::google::GoogleCommand;
 use crate::commands::google_image::GoogleImageCommand;
@@ -57,6 +58,7 @@ async fn main() {
     slash_commands.push(Box::new(BuzzCommand {
         db_pool: db_pool.clone(),
     }));
+    slash_commands.push(Box::new(EightBallCommand {}));
     slash_commands.push(Box::new(EpisodesCommand {}));
     slash_commands.push(Box::new(GoogleCommand {
         google_searcher: google_searcher.clone(),
