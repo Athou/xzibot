@@ -63,7 +63,7 @@ impl SlashCommand for BuzzCommand {
         }
 
         match entry {
-            None => Ok(None),
+            None => Ok(Some("Plus d'exclus pour le moment :(".to_string())),
             Some(e) => match (e.title, e.links.get(0).map(|l| &l.href)) {
                 (Some(title), Some(link)) => {
                     self.save_new_entry(&e.id).await?;
