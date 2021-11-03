@@ -1,6 +1,7 @@
 use crate::commands::blague::BlagueCommand;
 use crate::commands::connerie::ConnerieCommand;
 use crate::commands::episodes::EpisodesCommand;
+use crate::commands::google::GoogleCommand;
 use crate::commands::google_image::GoogleImageCommand;
 use crate::commands::horoscope::HoroscopeCommand;
 use crate::commands::skandite::SkanditeCommand;
@@ -53,6 +54,9 @@ async fn main() {
         blagues_api_token: config.blagues_api_token,
     }));
     slash_commands.push(Box::new(EpisodesCommand {}));
+    slash_commands.push(Box::new(GoogleCommand {
+        google_searcher: google_searcher.clone(),
+    }));
     slash_commands.push(Box::new(GoogleImageCommand {
         google_searcher: google_searcher.clone(),
     }));
