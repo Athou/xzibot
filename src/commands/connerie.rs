@@ -26,14 +26,14 @@ pub struct ConnerieCommand {
 }
 impl ConnerieCommand {
     async fn should_trigger_save(&self, ctx: &Context, message: &Message) -> Result<bool, Error> {
-        let trigger = !self.mentions_me(ctx, message).await?
-            && message.content.chars().count() > 9
+        let trigger = message.content.chars().count() > 9
             && !message.mention_everyone
             && message.mention_roles.is_empty()
             && message.mention_channels.is_empty()
             && message.mentions.is_empty()
             && !has_url(&message.content)
-            && !contains_emoji(&message.content);
+            && !contains_emoji(&message.content)
+            && !self.mentions_me(ctx, message).await?;
         Ok(trigger)
     }
 
