@@ -61,7 +61,7 @@ impl EventHandler for Handler {
             for boxed_slash_command in &self.slash_commands {
                 let slash_command = &*boxed_slash_command;
                 let result = slash_command.handle(&application_command);
-                match result {
+                match result.await {
                     Err(e) => println!(
                         "error while executing command {} : {}",
                         application_command.data.name, e

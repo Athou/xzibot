@@ -1,6 +1,7 @@
 use crate::commands::SlashCommand;
 use anyhow::Error;
 use serde::Deserialize;
+use serenity::async_trait;
 use serenity::builder::CreateApplicationCommand;
 use serenity::model::prelude::application_command::ApplicationCommandInteraction;
 
@@ -13,12 +14,17 @@ struct Joke {
 pub struct BlagueCommand {
     pub blagues_api_token: String,
 }
+
+#[async_trait]
 impl SlashCommand for BlagueCommand {
     fn register(&self, command: &mut CreateApplicationCommand) {
         command.name("blague").description("une blague au hasard!");
     }
 
-    fn handle(&self, interaction: &ApplicationCommandInteraction) -> Result<Option<String>, Error> {
+    async fn handle(
+        &self,
+        interaction: &ApplicationCommandInteraction,
+    ) -> Result<Option<String>, Error> {
         if interaction.data.name != "blague" {
             return Ok(None);
         }

@@ -3,6 +3,7 @@ use crate::utils::google::GoogleSearcher;
 use crate::utils::google::SearchMode;
 use anyhow::anyhow;
 use anyhow::Error;
+use serenity::async_trait;
 use serenity::builder::CreateApplicationCommand;
 use serenity::model::interactions::application_command::ApplicationCommandInteractionDataOptionValue;
 use serenity::model::interactions::application_command::ApplicationCommandOptionType;
@@ -12,6 +13,8 @@ use std::sync::Arc;
 pub struct GoogleImageCommand {
     pub google_searcher: Arc<GoogleSearcher>,
 }
+
+#[async_trait]
 impl SlashCommand for GoogleImageCommand {
     fn register(&self, command: &mut CreateApplicationCommand) {
         command
@@ -26,7 +29,10 @@ impl SlashCommand for GoogleImageCommand {
             });
     }
 
-    fn handle(&self, interaction: &ApplicationCommandInteraction) -> Result<Option<String>, Error> {
+    async fn handle(
+        &self,
+        interaction: &ApplicationCommandInteraction,
+    ) -> Result<Option<String>, Error> {
         if interaction.data.name != "image" {
             return Ok(None);
         }

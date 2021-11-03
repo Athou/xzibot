@@ -1,4 +1,5 @@
 use crate::commands::blague::BlagueCommand;
+use crate::commands::buzz::BuzzCommand;
 use crate::commands::connerie::ConnerieCommand;
 use crate::commands::episodes::EpisodesCommand;
 use crate::commands::google::GoogleCommand;
@@ -52,6 +53,9 @@ async fn main() {
     let mut slash_commands: Vec<Box<dyn SlashCommand>> = Vec::new();
     slash_commands.push(Box::new(BlagueCommand {
         blagues_api_token: config.blagues_api_token,
+    }));
+    slash_commands.push(Box::new(BuzzCommand {
+        db_pool: db_pool.clone(),
     }));
     slash_commands.push(Box::new(EpisodesCommand {}));
     slash_commands.push(Box::new(GoogleCommand {

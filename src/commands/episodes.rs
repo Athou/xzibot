@@ -4,6 +4,7 @@ use anyhow::Error;
 use chrono::{DateTime, Utc};
 use chrono_humanize::HumanTime;
 use serde::Deserialize;
+use serenity::async_trait;
 use serenity::builder::CreateApplicationCommand;
 use serenity::model::interactions::application_command::ApplicationCommandInteractionDataOptionValue;
 use serenity::model::interactions::application_command::ApplicationCommandOptionType;
@@ -36,6 +37,8 @@ struct TVMazeEpisode {
 }
 
 pub struct EpisodesCommand {}
+
+#[async_trait]
 impl SlashCommand for EpisodesCommand {
     fn register(&self, command: &mut CreateApplicationCommand) {
         command
@@ -50,7 +53,10 @@ impl SlashCommand for EpisodesCommand {
             });
     }
 
-    fn handle(&self, interaction: &ApplicationCommandInteraction) -> Result<Option<String>, Error> {
+    async fn handle(
+        &self,
+        interaction: &ApplicationCommandInteraction,
+    ) -> Result<Option<String>, Error> {
         if interaction.data.name != "next" {
             return Ok(None);
         }

@@ -3,12 +3,15 @@ use anyhow::anyhow;
 use anyhow::Error;
 use scraper::Html;
 use scraper::Selector;
+use serenity::async_trait;
 use serenity::builder::CreateApplicationCommand;
 use serenity::model::interactions::application_command::ApplicationCommandInteractionDataOptionValue;
 use serenity::model::interactions::application_command::ApplicationCommandOptionType;
 use serenity::model::prelude::application_command::ApplicationCommandInteraction;
 
 pub struct HoroscopeCommand {}
+
+#[async_trait]
 impl SlashCommand for HoroscopeCommand {
     fn register(&self, command: &mut CreateApplicationCommand) {
         command
@@ -23,7 +26,10 @@ impl SlashCommand for HoroscopeCommand {
             });
     }
 
-    fn handle(&self, interaction: &ApplicationCommandInteraction) -> Result<Option<String>, Error> {
+    async fn handle(
+        &self,
+        interaction: &ApplicationCommandInteraction,
+    ) -> Result<Option<String>, Error> {
         if interaction.data.name != "horoscope" {
             return Ok(None);
         }
