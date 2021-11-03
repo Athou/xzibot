@@ -1,6 +1,7 @@
 use crate::commands::SlashCommand;
 use anyhow::anyhow;
 use anyhow::Error;
+use linked_hash_map::LinkedHashMap;
 use scraper::Html;
 use scraper::Selector;
 use serenity::async_trait;
@@ -22,7 +23,11 @@ impl SlashCommand for HoroscopeCommand {
                     .name("sign")
                     .description("Votre signe astrologique")
                     .kind(ApplicationCommandOptionType::String)
-                    .required(true)
+                    .required(true);
+                for sign in build_sign_map().keys() {
+                    option.add_string_choice(sign, sign);
+                }
+                option
             });
     }
 
@@ -44,11 +49,13 @@ impl SlashCommand for HoroscopeCommand {
             .ok_or(anyhow!("missing sign option value"))?;
 
         let sign = match option {
-            ApplicationCommandInteractionDataOptionValue::String(q) => q.to_lowercase(),
+            ApplicationCommandInteractionDataOptionValue::String(s) => s,
             _ => return Err(anyhow!("wrong value type for sign option")),
         };
-        let sign_number =
-            map_sign(&sign).ok_or(anyhow!("cannot find sign mapping for {}", &sign))?;
+        let sign_map = build_sign_map();
+        let sign_number = sign_map
+            .get(sign)
+            .ok_or(anyhow!("cannot find sign mapping for {}", &sign))?;
         let url = format!(
             "https://www.horoscope.com/us/horoscopes/general/horoscope-general-daily-today.aspx?sign={}",
             sign_number
@@ -66,24 +73,23 @@ impl SlashCommand for HoroscopeCommand {
             .text()
             .nth(1)
             .ok_or(anyhow!("cannot extract text of node"))?;
-        Ok(Some(horoscope.to_string()))
+        Ok(Some(format!("{}{}", sign, horoscope.to_string())))
     }
 }
 
-fn map_sign(sign: &str) -> Option<u8> {
-    match sign {
-        "aries" | "belier" => Some(1),
-        "taurus" | "taureau" => Some(2),
-        "gemini" | "gemeaux" => Some(3),
-        "cancer" => Some(4),
-        "leo" | "lion" => Some(5),
-        "virgo" | "vierge" => Some(6),
-        "libra" | "balance" => Some(7),
-        "scorpio" | "scorpion" => Some(8),
-        "sagittarius" | "sagittaire" => Some(9),
-        "capricorn" | "capricorne" => Some(10),
-        "aquarius" | "verseau" => Some(11),
-        "pisces" | "poisson" | "poissons" => Some(12),
-        _ => None,
-    }
+fn build_sign_map() -> LinkedHashMap<String, String> {
+    let mut map = LinkedHashMap::new();
+    map.insert("Bélier".to_string(), "1".to_string());
+    map.insert("Taureau".to_string(), "2".to_string());
+    map.insert("Gémeaux".to_string(), "3".to_string());
+    map.insert("Cancer".to_string(), "4".to_string());
+    map.insert("Lion".to_string(), "5".to_string());
+    map.insert("Vierge".to_string(), "6".to_string());
+    map.insert("Balance".to_string(), "7".to_string());
+    map.insert("Scorpion".to_string(), "8".to_string());
+    map.insert("Sagittaire".to_string(), "9".to_string());
+    map.insert("Capricorne".to_string(), "10".to_string());
+    map.insert("Verseau".to_string(), "11".to_string());
+    map.insert("Poissons".to_string(), "12".to_string());
+    map
 }
