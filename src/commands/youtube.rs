@@ -56,9 +56,12 @@ impl SlashCommand for YoutubeCommand {
             SearchMode::Web,
         ) {
             Ok(Some(r)) => {
-                let line1 = format!("{} - {}", r.title, r.link);
-                let line2 = format!("{}", r.snippet);
-                Ok(Some(vec![line1, line2].join("\n")))
+                let mut lines = Vec::new();
+                lines.push(format!("{} - {}", r.title, r.link));
+                if let Some(snippet) = r.snippet {
+                    lines.push(format!("{}", snippet));
+                }
+                Ok(Some(lines.join("\n")))
             }
             Ok(None) => Ok(Some("Pas de résultat".to_string())),
             Err(e) => Err(e),

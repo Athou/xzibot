@@ -16,7 +16,7 @@ struct GoogleSearch {
 pub struct GoogleSearchItem {
     pub title: String,
     pub link: String,
-    pub snippet: String,
+    pub snippet: Option<String>,
 }
 
 pub struct GoogleSearcher {
