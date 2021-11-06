@@ -22,13 +22,13 @@ impl BuzzCommand {
         Ok(exists.is_some())
     }
 
-    async fn save_new_entry(&self, link: &str) -> Result<MySqlQueryResult, Error> {
+    async fn save_new_entry(&self, guid: &str) -> Result<MySqlQueryResult, Error> {
         let result = sqlx::query(
             r#"
             INSERT INTO RSSFeed (`guid`)
             VALUES(?)"#,
         )
-        .bind(link)
+        .bind(guid)
         .execute(&*self.db_pool)
         .await?;
         Ok(result)
