@@ -17,6 +17,7 @@ regex = "1.5"
 scraper = "0.12"
 serde = "1.0"
 serenity = { version = "0.10", features = ["unstable_discord_api"] }
+sql-builder = "3.1"
 sqlx = { version = "0.5", features = [
     "mysql",
     "chrono",

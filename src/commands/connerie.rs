@@ -1,17 +1,25 @@
 use crate::utils::extract_url;
 use crate::MessageCommand;
+use crate::SlashCommand;
+use anyhow::anyhow;
 use anyhow::Error;
 use rand::Rng;
 use regex::Regex;
 use serenity::async_trait;
+use serenity::builder::CreateApplicationCommand;
 use serenity::client::Context;
+use serenity::model::interactions::application_command::ApplicationCommandInteractionDataOptionValue;
+use serenity::model::interactions::application_command::ApplicationCommandOptionType;
+use serenity::model::prelude::application_command::ApplicationCommandInteraction;
 use serenity::model::prelude::Message;
+use sql_builder::SqlBuilder;
 use sqlx::mysql::MySqlQueryResult;
 use sqlx::MySqlPool;
 use sqlx::Row;
 use std::sync::Arc;
 
 const PROC_PERCENTAGE: u8 = 3;
+const MIN_RAND_TERMS_LENGTH: usize = 4;
 
 #[derive(sqlx::FromRow)]
 pub struct Connerie {
@@ -21,7 +29,7 @@ pub struct Connerie {
 }
 
 pub struct ConnerieCommand {
-    pub bot_name: String,
+    pub bot_name: Arc<String>,
     pub db_pool: Arc<MySqlPool>,
 }
 impl ConnerieCommand {
@@ -63,21 +71,59 @@ impl ConnerieCommand {
         _ctx: &Context,
         _message: &Message,
     ) -> Result<Option<String>, Error> {
-        let count: i64 = sqlx::query("SELECT count(*) from Connerie")
-            .fetch_one(&*self.db_pool)
-            .await?
-            .get(0);
-
+        let count = self.count().await?;
         if count <= 0 {
             Ok(None)
         } else {
-            let id = rand::thread_rng().gen_range(0..count);
+            let offset = rand::thread_rng().gen_range(0..count);
             let connerie = sqlx::query_as::<_, Connerie>("SELECT * FROM Connerie LIMIT 1 OFFSET ?")
-                .bind(&id)
+                .bind(&offset)
                 .fetch_one(&*self.db_pool)
                 .await?;
             Ok(Some(connerie.value))
         }
+    }
+
+    async fn count(&self) -> Result<i64, Error> {
+        let count: i64 = sqlx::query("SELECT count(*) from Connerie")
+            .fetch_one(&*self.db_pool)
+            .await?
+            .get(0);
+        Ok(count)
+    }
+
+    fn build_search_sql(&self, tokens: &Vec<&str>, with_spaces: bool) -> Result<String, Error> {
+        let mut sql = SqlBuilder::select_from("Connerie");
+        sql.field("*");
+        for token in tokens {
+            let like_pattern = if with_spaces {
+                format!("% {} %", token.to_lowercase())
+            } else {
+                format!("%{}%", token.to_lowercase())
+            };
+            sql.and_where_like("LOWER(value)", like_pattern);
+        }
+        sql.sql()
+    }
+
+    async fn search(&self, tokens: &Vec<&str>) -> Result<Option<String>, Error> {
+        let mut conneries = sqlx::query_as::<_, Connerie>(&self.build_search_sql(tokens, true)?)
+            .fetch_all(&*self.db_pool)
+            .await?;
+
+        if conneries.is_empty() {
+            conneries = sqlx::query_as::<_, Connerie>(&self.build_search_sql(tokens, false)?)
+                .fetch_all(&*self.db_pool)
+                .await?;
+        }
+
+        if conneries.is_empty() {
+            return Ok(None);
+        }
+
+        let i = rand::thread_rng().gen_range(0..conneries.len());
+        let connerie = conneries.into_iter().nth(i).map(|c| c.value);
+        Ok(connerie)
     }
 
     async fn mentions_me(&self, ctx: &Context, message: &Message) -> Result<bool, Error> {
@@ -101,6 +147,59 @@ impl MessageCommand for ConnerieCommand {
             self.trigger_say(ctx, message).await
         } else {
             Ok(None)
+        }
+    }
+}
+
+#[async_trait]
+impl SlashCommand for ConnerieCommand {
+    fn register(&self, command: &mut CreateApplicationCommand) {
+        command
+            .name("rand")
+            .description("Une phrase au hasard")
+            .create_option(|option| {
+                option
+                    .name("terms")
+                    .description("Que chercher ?")
+                    .kind(ApplicationCommandOptionType::String)
+                    .required(true)
+            });
+    }
+
+    async fn handle(
+        &self,
+        interaction: &ApplicationCommandInteraction,
+    ) -> Result<Option<String>, Error> {
+        if interaction.data.name != "rand" {
+            return Ok(None);
+        }
+
+        let option = interaction
+            .data
+            .options
+            .get(0)
+            .ok_or(anyhow!("missing terms option"))?
+            .resolved
+            .as_ref()
+            .ok_or(anyhow!("missing terms option value"))?;
+
+        let search_terms = match option {
+            ApplicationCommandInteractionDataOptionValue::String(q) => q,
+            _ => return Err(anyhow!("wrong value type for terms option")),
+        };
+
+        if search_terms.chars().count() < MIN_RAND_TERMS_LENGTH {
+            return Ok(Some(format!(
+                "Requête trop courte, minimum {} caractères",
+                MIN_RAND_TERMS_LENGTH
+            )));
+        }
+
+        let tokens = search_terms.split(" ").collect();
+        let connerie = self.search(&tokens).await?;
+        match connerie {
+            None => Ok(Some("Pas de résultat".to_string())),
+            Some(c) => Ok(Some(c)),
         }
     }
 }
