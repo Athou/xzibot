@@ -11,6 +11,7 @@ use crate::commands::youtube::YoutubeCommand;
 use crate::commands::MessageCommand;
 use crate::handler::Handler;
 use crate::utils::google::GoogleSearcher;
+use commands::quote::QuoteCommand;
 use commands::SlashCommand;
 use figment::providers::Env;
 use figment::providers::Format;
@@ -73,6 +74,9 @@ async fn main() {
         google_searcher: google_searcher.clone(),
     }));
     slash_commands.push(Box::new(HoroscopeCommand {}));
+    slash_commands.push(Box::new(QuoteCommand {
+        db_pool: db_pool.clone(),
+    }));
     slash_commands.push(Box::new(YoutubeCommand {
         google_searcher: google_searcher.clone(),
     }));

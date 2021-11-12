@@ -13,6 +13,7 @@ pub mod episodes;
 pub mod google;
 pub mod google_image;
 pub mod horoscope;
+pub mod quote;
 pub mod skandite;
 pub mod youtube;
 
