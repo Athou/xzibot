@@ -186,8 +186,7 @@ checksum = "fff857943da45f546682664a79488be82e69e43c1a7a2307679ab9afb3a66d2e"
 [[package]]
 name = "command_attr"
 version = "0.3.7"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8a6c3666f685cb1efc0628b8c984dbad9c372d080450736c7732089c385ed81d"
+source = "git+https://github.com/serenity-rs/serenity?branch=current#37e33bd693dfc4e0ca1ff70ff476b4aee571371e"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -1645,8 +1644,7 @@ dependencies = [
 [[package]]
 name = "serenity"
 version = "0.10.9"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6275d443266aedf2be507a245ddc23db0c07b1b99774e16f3c879e96a78b067a"
+source = "git+https://github.com/serenity-rs/serenity?branch=current#37e33bd693dfc4e0ca1ff70ff476b4aee571371e"
 dependencies = [
  "async-trait",
  "async-tungstenite",
@@ -2493,6 +2491,7 @@ dependencies = [
  "regex",
  "scraper",
  "serde",
+ "serde_json",
  "serenity",
  "sql-builder",
  "sqlx",
