@@ -1,5 +1,6 @@
 use anyhow::Error;
 use rand::Rng;
+use sql_builder::SqlBuilder;
 use sqlx::MySqlPool;
 use sqlx::Row;
 
@@ -25,6 +26,24 @@ impl Quote {
             .await?
             .get(0);
         Ok(count)
+    }
+
+    fn build_search_sql(tokens: &Vec<&str>) -> Result<String, Error> {
+        let mut sql = SqlBuilder::select_from("Quote");
+        sql.field("*");
+        for token in tokens {
+            let like_pattern = format!("%{}%", token.to_lowercase());
+            sql.and_where_like("LOWER(quote)", like_pattern);
+        }
+        sql.sql()
+    }
+
+    pub async fn search(pool: &MySqlPool, tokens: &Vec<&str>) -> Result<Vec<Quote>, Error> {
+        let quotes = sqlx::query_as::<_, Quote>(&Quote::build_search_sql(tokens)?)
+            .fetch_all(pool)
+            .await?;
+
+        Ok(quotes)
     }
 
     pub async fn random(pool: &MySqlPool) -> Result<Option<Quote>, Error> {

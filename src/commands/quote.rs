@@ -45,6 +45,42 @@ impl QuoteCommand {
         }
     }
 
+    async fn trigger_find(
+        &self,
+        command: &ApplicationCommandInteractionDataOption,
+    ) -> Result<Option<String>, Error> {
+        let option = command
+            .options
+            .get(0)
+            .ok_or(anyhow!("missing command sub option"))?
+            .resolved
+            .as_ref()
+            .ok_or(anyhow!("missing command sub option value"))?;
+
+        let search_terms = match option {
+            ApplicationCommandInteractionDataOptionValue::String(s) => s,
+            _ => return Err(anyhow!("wrong value type for command sub option")),
+        };
+
+        let tokens = search_terms.split(" ").collect();
+
+        let quotes = Quote::search(&self.db_pool, &tokens).await?;
+        if quotes.is_empty() {
+            return Ok(Some("Pas de résultat.".to_string()));
+        }
+
+        let quote_ids = quotes
+            .iter()
+            .map(|q| q.number.to_string())
+            .collect::<Vec<String>>();
+
+        let message = format!(
+            "Quotes correspondants à la recherche : {}",
+            quote_ids.join(", ")
+        );
+        Ok(Some(message))
+    }
+
     async fn trigger_random(&self) -> Result<Option<String>, Error> {
         let quote = Quote::random(&self.db_pool).await?;
         match quote {
@@ -83,6 +119,19 @@ impl SlashCommand for QuoteCommand {
             })
             .create_option(|option| {
                 option
+                    .name("find")
+                    .description("trouver une citation avec des mots clés")
+                    .kind(ApplicationCommandOptionType::SubCommand)
+                    .create_sub_option(|sub_option| {
+                        sub_option
+                            .name("terms")
+                            .description("mots clés")
+                            .kind(ApplicationCommandOptionType::String)
+                            .required(true)
+                    })
+            })
+            .create_option(|option| {
+                option
                     .name("random")
                     .description("une citation au hasard")
                     .kind(ApplicationCommandOptionType::SubCommand)
@@ -111,6 +160,7 @@ impl SlashCommand for QuoteCommand {
 
         match command.name.as_str() {
             "get" => self.trigger_get(command).await,
+            "find" => self.trigger_find(command).await,
             "random" => self.trigger_random().await,
             "count" => self.trigger_count().await,
             e => Err(anyhow!("unknown command {}", e)),
