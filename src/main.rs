@@ -25,6 +25,7 @@ use sqlx::MySqlPool;
 use std::sync::Arc;
 
 mod commands;
+mod db;
 mod handler;
 mod utils;
 

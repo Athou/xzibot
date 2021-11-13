@@ -1,7 +1,7 @@
 use crate::commands::SlashCommand;
+use crate::db::quote::Quote;
 use anyhow::anyhow;
 use anyhow::Error;
-use rand::Rng;
 use serenity::async_trait;
 use serenity::builder::CreateApplicationCommand;
 use serenity::model::interactions::application_command::ApplicationCommandInteractionDataOption;
@@ -10,36 +10,15 @@ use serenity::model::interactions::application_command::ApplicationCommandOption
 use serenity::model::interactions::application_command::ApplicationCommandType;
 use serenity::model::prelude::application_command::ApplicationCommandInteraction;
 use sqlx::MySqlPool;
-use sqlx::Row;
 use std::sync::Arc;
-
-#[derive(sqlx::FromRow)]
-pub struct Quote {
-    pub id: i64,
-    pub quote: String,
-    pub number: i64,
-}
 
 pub struct QuoteCommand {
     pub db_pool: Arc<MySqlPool>,
 }
 
 impl QuoteCommand {
-    async fn find_quote_by_number(&self, number: i64) -> Result<Option<String>, Error> {
-        let quote = sqlx::query_as::<_, Quote>("SELECT * FROM Quote where number = ?")
-            .bind(&number)
-            .fetch_optional(&*self.db_pool)
-            .await?;
-        Ok(quote.map(|q| q.quote))
-    }
-
-    // TODO remove duplicate count method
-    async fn count(&self) -> Result<i64, Error> {
-        let count: i64 = sqlx::query("SELECT count(*) from Quote")
-            .fetch_one(&*self.db_pool)
-            .await?
-            .get(0);
-        Ok(count)
+    fn format_quote(quote: &Quote) -> String {
+        format!("{}. {}", quote.number, quote.quote)
     }
 
     async fn trigger_get(
@@ -59,24 +38,18 @@ impl QuoteCommand {
             _ => return Err(anyhow!("wrong value type for command sub option")),
         };
 
-        let quote = self.find_quote_by_number(number.parse::<i64>()?).await?;
+        let quote = Quote::find_by_number(&self.db_pool, number.parse::<i64>()?).await?;
         match quote {
             None => Ok(Some("Pas de résultat!".to_string())),
-            Some(q) => Ok(Some(q)),
+            Some(q) => Ok(Some(QuoteCommand::format_quote(&q))),
         }
     }
 
     async fn trigger_random(&self) -> Result<Option<String>, Error> {
-        let count = self.count().await?;
-        if count <= 0 {
-            Ok(None)
-        } else {
-            let offset = rand::thread_rng().gen_range(0..count);
-            let quote = sqlx::query_as::<_, Quote>("SELECT * FROM Quote LIMIT 1 OFFSET ?")
-                .bind(&offset)
-                .fetch_one(&*self.db_pool)
-                .await?;
-            Ok(Some(quote.quote))
+        let quote = Quote::random(&self.db_pool).await?;
+        match quote {
+            None => Ok(Some("Pas de résultat!".to_string())),
+            Some(q) => Ok(Some(QuoteCommand::format_quote(&q))),
         }
     }
 }
@@ -134,32 +107,6 @@ pub struct QuoteAddCommand {
     pub db_pool: Arc<MySqlPool>,
 }
 
-impl QuoteAddCommand {
-    async fn count(&self) -> Result<i64, Error> {
-        let count: i64 = sqlx::query("SELECT count(*) from Quote")
-            .fetch_one(&*self.db_pool)
-            .await?
-            .get(0);
-        Ok(count)
-    }
-
-    async fn save_quote(&self, quote: &str) -> Result<i64, Error> {
-        let number = self.count().await? + 1;
-
-        sqlx::query(
-            r#"
-            INSERT INTO Quote (`quote`, `number`)
-            VALUES(?, ?)"#,
-        )
-        .bind(quote)
-        .bind(number)
-        .execute(&*self.db_pool)
-        .await?;
-
-        Ok(number)
-    }
-}
-
 #[async_trait]
 impl SlashCommand for QuoteAddCommand {
     fn register(&self, command: &mut CreateApplicationCommand) {
@@ -185,7 +132,7 @@ impl SlashCommand for QuoteAddCommand {
             .ok_or(anyhow!("messages map is empty"))?;
 
         let quote = format!("<{}> {}", message.author.name, message.content);
-        let i = self.save_quote(&quote).await?;
+        let i = Quote::save(&self.db_pool, &quote).await?;
         let reply = format!("Quote {} ajoutée : {}", i, quote);
 
         Ok(Some(reply))

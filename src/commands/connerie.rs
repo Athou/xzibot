@@ -1,3 +1,4 @@
+use crate::db::connerie::Connerie;
 use crate::utils::extract_url;
 use crate::MessageCommand;
 use crate::SlashCommand;
@@ -12,21 +13,11 @@ use serenity::model::interactions::application_command::ApplicationCommandIntera
 use serenity::model::interactions::application_command::ApplicationCommandOptionType;
 use serenity::model::prelude::application_command::ApplicationCommandInteraction;
 use serenity::model::prelude::Message;
-use sql_builder::SqlBuilder;
-use sqlx::mysql::MySqlQueryResult;
 use sqlx::MySqlPool;
-use sqlx::Row;
 use std::sync::Arc;
 
 const PROC_PERCENTAGE: u8 = 3;
 const MIN_RAND_TERMS_LENGTH: usize = 4;
-
-#[derive(sqlx::FromRow)]
-pub struct Connerie {
-    pub id: i64,
-    pub value: String,
-    pub author: Option<String>,
-}
 
 pub struct ConnerieCommand {
     pub bot_name: Arc<String>,
@@ -45,85 +36,12 @@ impl ConnerieCommand {
         Ok(trigger)
     }
 
-    async fn trigger_save(&self, message: &Message) -> Result<MySqlQueryResult, Error> {
-        let result = sqlx::query(
-            r#"
-            INSERT INTO Connerie (`author`, `value`)
-            VALUES(?, ?)"#,
-        )
-        .bind(&message.author.name)
-        .bind(&message.content)
-        .execute(&*self.db_pool)
-        .await?;
-        Ok(result)
-    }
-
     async fn should_trigger_say(&self, ctx: &Context, message: &Message) -> Result<bool, Error> {
         if self.mentions_me(ctx, message).await? {
             Ok(true)
         } else {
             Ok(rand::thread_rng().gen_range(1..100) <= PROC_PERCENTAGE)
         }
-    }
-
-    async fn trigger_say(
-        &self,
-        _ctx: &Context,
-        _message: &Message,
-    ) -> Result<Option<String>, Error> {
-        let count = self.count().await?;
-        if count <= 0 {
-            Ok(None)
-        } else {
-            let offset = rand::thread_rng().gen_range(0..count);
-            let connerie = sqlx::query_as::<_, Connerie>("SELECT * FROM Connerie LIMIT 1 OFFSET ?")
-                .bind(&offset)
-                .fetch_one(&*self.db_pool)
-                .await?;
-            Ok(Some(connerie.value))
-        }
-    }
-
-    async fn count(&self) -> Result<i64, Error> {
-        let count: i64 = sqlx::query("SELECT count(*) from Connerie")
-            .fetch_one(&*self.db_pool)
-            .await?
-            .get(0);
-        Ok(count)
-    }
-
-    fn build_search_sql(&self, tokens: &Vec<&str>, with_spaces: bool) -> Result<String, Error> {
-        let mut sql = SqlBuilder::select_from("Connerie");
-        sql.field("*");
-        for token in tokens {
-            let like_pattern = if with_spaces {
-                format!("% {} %", token.to_lowercase())
-            } else {
-                format!("%{}%", token.to_lowercase())
-            };
-            sql.and_where_like("LOWER(value)", like_pattern);
-        }
-        sql.sql()
-    }
-
-    async fn search(&self, tokens: &Vec<&str>) -> Result<Option<String>, Error> {
-        let mut conneries = sqlx::query_as::<_, Connerie>(&self.build_search_sql(tokens, true)?)
-            .fetch_all(&*self.db_pool)
-            .await?;
-
-        if conneries.is_empty() {
-            conneries = sqlx::query_as::<_, Connerie>(&self.build_search_sql(tokens, false)?)
-                .fetch_all(&*self.db_pool)
-                .await?;
-        }
-
-        if conneries.is_empty() {
-            return Ok(None);
-        }
-
-        let i = rand::thread_rng().gen_range(0..conneries.len());
-        let connerie = conneries.into_iter().nth(i).map(|c| c.value);
-        Ok(connerie)
     }
 
     async fn mentions_me(&self, ctx: &Context, message: &Message) -> Result<bool, Error> {
@@ -140,11 +58,11 @@ impl ConnerieCommand {
 impl MessageCommand for ConnerieCommand {
     async fn handle(&self, ctx: &Context, message: &Message) -> Result<Option<String>, Error> {
         if self.should_trigger_save(ctx, message).await? {
-            self.trigger_save(message).await?;
+            Connerie::insert(&self.db_pool, &message.author.name, &message.content).await?;
         }
 
         if self.should_trigger_say(ctx, message).await? {
-            self.trigger_say(ctx, message).await
+            Connerie::random(&self.db_pool).await
         } else {
             Ok(None)
         }
@@ -196,7 +114,7 @@ impl SlashCommand for ConnerieCommand {
         }
 
         let tokens = search_terms.split(" ").collect();
-        let connerie = self.search(&tokens).await?;
+        let connerie = Connerie::search(&self.db_pool, &tokens).await?;
         match connerie {
             None => Ok(Some("Pas de résultat".to_string())),
             Some(c) => Ok(Some(c)),
