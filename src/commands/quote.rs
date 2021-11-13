@@ -52,6 +52,14 @@ impl QuoteCommand {
             Some(q) => Ok(Some(QuoteCommand::format_quote(&q))),
         }
     }
+
+    async fn trigger_count(&self) -> Result<Option<String>, Error> {
+        let count = Quote::count(&self.db_pool).await?;
+        Ok(Some(format!(
+            "Il y a {} citations dans la base de données.",
+            count
+        )))
+    }
 }
 
 #[async_trait]
@@ -78,6 +86,12 @@ impl SlashCommand for QuoteCommand {
                     .name("random")
                     .description("une citation au hasard")
                     .kind(ApplicationCommandOptionType::SubCommand)
+            })
+            .create_option(|option| {
+                option
+                    .name("count")
+                    .description("combien de citations il y a dans la base de données")
+                    .kind(ApplicationCommandOptionType::SubCommand)
             });
     }
 
@@ -98,6 +112,7 @@ impl SlashCommand for QuoteCommand {
         match command.name.as_str() {
             "get" => self.trigger_get(command).await,
             "random" => self.trigger_random().await,
+            "count" => self.trigger_count().await,
             e => Err(anyhow!("unknown command {}", e)),
         }
     }
