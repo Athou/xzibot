@@ -21,8 +21,7 @@ impl EventHandler for Handler {
             return;
         }
 
-        for boxed_message_command in &self.message_commands {
-            let message_command = &*boxed_message_command;
+        for message_command in &self.message_commands {
             let result = message_command.handle(&ctx, &message);
             match result.await {
                 Err(e) => println!("error while executing message command : {}", e),
@@ -38,8 +37,7 @@ impl EventHandler for Handler {
         println!("{} is connected!", ready.user.name);
 
         ApplicationCommand::set_global_application_commands(&ctx.http, |global_commands| {
-            for boxed_slash_command in &self.slash_commands {
-                let slash_command = &*boxed_slash_command;
+            for slash_command in &self.slash_commands {
                 global_commands.create_application_command(|application_command| {
                     slash_command.register(application_command);
                     application_command
@@ -58,8 +56,7 @@ impl EventHandler for Handler {
                 application_command.data.name, application_command.user.name
             );
 
-            for boxed_slash_command in &self.slash_commands {
-                let slash_command = &*boxed_slash_command;
+            for slash_command in &self.slash_commands {
                 let result = slash_command.handle(&application_command);
                 match result.await {
                     Err(e) => println!(
