@@ -96,10 +96,10 @@ impl SlashCommand for ConnerieCommand {
             .data
             .options
             .get(0)
-            .ok_or(anyhow!("missing terms option"))?
+            .ok_or_else(|| anyhow!("missing terms option"))?
             .resolved
             .as_ref()
-            .ok_or(anyhow!("missing terms option value"))?;
+            .ok_or_else(|| anyhow!("missing terms option value"))?;
 
         let search_terms = match option {
             ApplicationCommandInteractionDataOptionValue::String(q) => q,
@@ -113,8 +113,8 @@ impl SlashCommand for ConnerieCommand {
             )));
         }
 
-        let tokens = search_terms.split(" ").collect();
-        let connerie = Connerie::search(&self.db_pool, &tokens).await?;
+        let tokens: Vec<&str> = search_terms.split(' ').collect();
+        let connerie = Connerie::search(&self.db_pool, &tokens[..]).await?;
         match connerie {
             None => Ok(Some("Pas de résultat".to_string())),
             Some(c) => Ok(Some(c)),

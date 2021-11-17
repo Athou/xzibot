@@ -19,7 +19,7 @@ impl Connerie {
         Ok(count)
     }
 
-    fn build_search_sql(tokens: &Vec<&str>, with_spaces: bool) -> Result<String, Error> {
+    fn build_search_sql(tokens: &[&str], with_spaces: bool) -> Result<String, Error> {
         let mut sql = SqlBuilder::select_from("Connerie");
         sql.field("*");
         for token in tokens {
@@ -33,7 +33,7 @@ impl Connerie {
         sql.sql()
     }
 
-    pub async fn search(pool: &MySqlPool, tokens: &Vec<&str>) -> Result<Option<String>, Error> {
+    pub async fn search(pool: &MySqlPool, tokens: &[&str]) -> Result<Option<String>, Error> {
         let mut conneries =
             sqlx::query_as::<_, Connerie>(&Connerie::build_search_sql(tokens, true)?)
                 .fetch_all(pool)

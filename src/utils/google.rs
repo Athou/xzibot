@@ -42,9 +42,9 @@ impl GoogleSearcher {
             .call()?
             .into_json::<GoogleSearch>()?
             .items
-            .unwrap_or(vec![])
+            .unwrap_or_default()
             .into_iter()
-            .nth(0);
+            .next();
         Ok(item)
     }
 }

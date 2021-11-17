@@ -41,10 +41,10 @@ impl SlashCommand for GoogleImageCommand {
             .data
             .options
             .get(0)
-            .ok_or(anyhow!("missing terms option"))?
+            .ok_or_else(|| anyhow!("missing terms option"))?
             .resolved
             .as_ref()
-            .ok_or(anyhow!("missing terms option value"))?;
+            .ok_or_else(|| anyhow!("missing terms option value"))?;
 
         let search_terms = match option {
             ApplicationCommandInteractionDataOptionValue::String(q) => q,

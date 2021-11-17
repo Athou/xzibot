@@ -37,8 +37,7 @@ impl SlashCommand for BlagueCommand {
             .call()?
             .into_json::<Joke>()?;
 
-        let mut lines: Vec<String> = Vec::new();
-        lines.push(joke.joke);
+        let mut lines: Vec<String> = vec![joke.joke];
         if let Some(a) = joke.answer {
             lines.push(a);
         }

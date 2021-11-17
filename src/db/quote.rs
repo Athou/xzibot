@@ -28,7 +28,7 @@ impl Quote {
         Ok(count)
     }
 
-    fn build_search_sql(tokens: &Vec<&str>) -> Result<String, Error> {
+    fn build_search_sql(tokens: &[&str]) -> Result<String, Error> {
         let mut sql = SqlBuilder::select_from("Quote");
         sql.field("*");
         for token in tokens {
@@ -38,7 +38,7 @@ impl Quote {
         sql.sql()
     }
 
-    pub async fn search(pool: &MySqlPool, tokens: &Vec<&str>) -> Result<Vec<Quote>, Error> {
+    pub async fn search(pool: &MySqlPool, tokens: &[&str]) -> Result<Vec<Quote>, Error> {
         let quotes = sqlx::query_as::<_, Quote>(&Quote::build_search_sql(tokens)?)
             .fetch_all(pool)
             .await?;

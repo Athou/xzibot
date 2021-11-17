@@ -41,10 +41,10 @@ impl SlashCommand for YoutubeCommand {
             .data
             .options
             .get(0)
-            .ok_or(anyhow!("missing terms option"))?
+            .ok_or_else(|| anyhow!("missing terms option"))?
             .resolved
             .as_ref()
-            .ok_or(anyhow!("missing terms option value"))?;
+            .ok_or_else(|| anyhow!("missing terms option value"))?;
 
         let search_terms = match option {
             ApplicationCommandInteractionDataOptionValue::String(q) => q,
@@ -59,7 +59,7 @@ impl SlashCommand for YoutubeCommand {
                 let mut lines = Vec::new();
                 lines.push(format!("{} - {}", r.title, r.link));
                 if let Some(snippet) = r.snippet {
-                    lines.push(format!("{}", snippet));
+                    lines.push(snippet);
                 }
                 Ok(Some(lines.join("\n")))
             }

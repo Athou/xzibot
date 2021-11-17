@@ -43,10 +43,10 @@ impl SlashCommand for HoroscopeCommand {
             .data
             .options
             .get(0)
-            .ok_or(anyhow!("missing sign option"))?
+            .ok_or_else(|| anyhow!("missing sign option"))?
             .resolved
             .as_ref()
-            .ok_or(anyhow!("missing sign option value"))?;
+            .ok_or_else(|| anyhow!("missing sign option value"))?;
 
         let sign = match option {
             ApplicationCommandInteractionDataOptionValue::String(s) => s,
@@ -55,7 +55,7 @@ impl SlashCommand for HoroscopeCommand {
         let sign_map = build_sign_map();
         let sign_number = sign_map
             .get(sign)
-            .ok_or(anyhow!("cannot find sign mapping for {}", &sign))?;
+            .ok_or_else(|| anyhow!("cannot find sign mapping for {}", &sign))?;
         let url = format!(
             "https://www.horoscope.com/us/horoscopes/general/horoscope-general-daily-today.aspx?sign={}",
             sign_number
@@ -67,12 +67,12 @@ impl SlashCommand for HoroscopeCommand {
         let element = document
             .select(&selector)
             .next()
-            .ok_or(anyhow!("found no element matching selector in html"))?;
+            .ok_or_else(|| anyhow!("found no element matching selector in html"))?;
 
         let horoscope = element
             .text()
             .nth(1)
-            .ok_or(anyhow!("cannot extract text of node"))?;
+            .ok_or_else(|| anyhow!("cannot extract text of node"))?;
         Ok(Some(format!("{}{}", sign, horoscope.to_string())))
     }
 }

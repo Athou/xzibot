@@ -65,10 +65,10 @@ impl SlashCommand for EpisodesCommand {
             .data
             .options
             .get(0)
-            .ok_or(anyhow!("missing tv_show option"))?
+            .ok_or_else(|| anyhow!("missing tv_show option"))?
             .resolved
             .as_ref()
-            .ok_or(anyhow!("missing tv_show option value"))?;
+            .ok_or_else(|| anyhow!("missing tv_show option value"))?;
 
         let search_terms = match option {
             ApplicationCommandInteractionDataOptionValue::String(q) => q,
@@ -118,7 +118,7 @@ impl SlashCommand for EpisodesCommand {
 }
 
 fn find_previous_and_next_episodes(
-    episodes: &Vec<TVMazeEpisode>,
+    episodes: &[TVMazeEpisode],
 ) -> (Option<&TVMazeEpisode>, Option<&TVMazeEpisode>) {
     let mut previous: Option<&TVMazeEpisode> = None;
     let mut next: Option<&TVMazeEpisode> = None;
@@ -128,7 +128,7 @@ fn find_previous_and_next_episodes(
         if let Some(d) = episode.airstamp {
             if d < now {
                 previous = Some(episode);
-            } else if let None = next {
+            } else if next.is_none() {
                 next = Some(episode);
             }
         }

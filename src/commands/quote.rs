@@ -28,10 +28,10 @@ impl QuoteCommand {
         let option = command
             .options
             .get(0)
-            .ok_or(anyhow!("missing command sub option"))?
+            .ok_or_else(|| anyhow!("missing command sub option"))?
             .resolved
             .as_ref()
-            .ok_or(anyhow!("missing command sub option value"))?;
+            .ok_or_else(|| anyhow!("missing command sub option value"))?;
 
         let number = match option {
             ApplicationCommandInteractionDataOptionValue::String(s) => s,
@@ -52,19 +52,18 @@ impl QuoteCommand {
         let option = command
             .options
             .get(0)
-            .ok_or(anyhow!("missing command sub option"))?
+            .ok_or_else(|| anyhow!("missing command sub option"))?
             .resolved
             .as_ref()
-            .ok_or(anyhow!("missing command sub option value"))?;
+            .ok_or_else(|| anyhow!("missing command sub option value"))?;
 
         let search_terms = match option {
             ApplicationCommandInteractionDataOptionValue::String(s) => s,
             _ => return Err(anyhow!("wrong value type for command sub option")),
         };
 
-        let tokens = search_terms.split(" ").collect();
-
-        let quotes = Quote::search(&self.db_pool, &tokens).await?;
+        let tokens: Vec<&str> = search_terms.split(' ').collect();
+        let quotes = Quote::search(&self.db_pool, &tokens[..]).await?;
         if quotes.is_empty() {
             return Ok(Some("Pas de résultat.".to_string()));
         }
@@ -156,7 +155,7 @@ impl SlashCommand for QuoteCommand {
             .data
             .options
             .get(0)
-            .ok_or(anyhow!("missing command option"))?;
+            .ok_or_else(|| anyhow!("missing command option"))?;
 
         match command.name.as_str() {
             "get" => self.trigger_get(command).await,
@@ -194,7 +193,7 @@ impl SlashCommand for QuoteAddCommand {
             .messages
             .values()
             .next()
-            .ok_or(anyhow!("messages map is empty"))?;
+            .ok_or_else(|| anyhow!("messages map is empty"))?;
 
         let quote = format!("<{}> {}", message.author.name, message.content);
         let i = Quote::save(&self.db_pool, &quote).await?;

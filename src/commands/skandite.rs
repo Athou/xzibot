@@ -50,7 +50,7 @@ impl MessageCommand for SkanditeCommand {
 fn normalize_url(url: &str) -> Result<String, Error> {
     let normalizer = UrlNormalizer::new(url)?;
     let mut normalized_url = normalizer.normalize(Some(&["utm_.*"]))?;
-    if normalized_url.ends_with("/") {
+    if normalized_url.ends_with('/') {
         normalized_url.pop();
     }
     Ok(normalized_url)

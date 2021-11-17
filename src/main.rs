@@ -56,44 +56,46 @@ async fn main() {
         google_cse_id: config.google_cse_id,
     });
 
-    let mut slash_commands: Vec<Box<dyn SlashCommand>> = Vec::new();
-    slash_commands.push(Box::new(BlagueCommand {
-        blagues_api_token: config.blagues_api_token,
-    }));
-    slash_commands.push(Box::new(BuzzCommand {
-        db_pool: db_pool.clone(),
-    }));
-    slash_commands.push(Box::new(ConnerieCommand {
-        bot_name: bot_name.clone(),
-        db_pool: db_pool.clone(),
-    }));
-    slash_commands.push(Box::new(EightBallCommand {}));
-    slash_commands.push(Box::new(EpisodesCommand {}));
-    slash_commands.push(Box::new(GoogleCommand {
-        google_searcher: google_searcher.clone(),
-    }));
-    slash_commands.push(Box::new(GoogleImageCommand {
-        google_searcher: google_searcher.clone(),
-    }));
-    slash_commands.push(Box::new(HoroscopeCommand {}));
-    slash_commands.push(Box::new(QuoteCommand {
-        db_pool: db_pool.clone(),
-    }));
-    slash_commands.push(Box::new(QuoteAddCommand {
-        db_pool: db_pool.clone(),
-    }));
-    slash_commands.push(Box::new(YoutubeCommand {
-        google_searcher: google_searcher.clone(),
-    }));
+    let slash_commands: Vec<Box<dyn SlashCommand>> = vec![
+        Box::new(BlagueCommand {
+            blagues_api_token: config.blagues_api_token,
+        }),
+        Box::new(BuzzCommand {
+            db_pool: db_pool.clone(),
+        }),
+        Box::new(ConnerieCommand {
+            bot_name: bot_name.clone(),
+            db_pool: db_pool.clone(),
+        }),
+        Box::new(EightBallCommand {}),
+        Box::new(EpisodesCommand {}),
+        Box::new(GoogleCommand {
+            google_searcher: google_searcher.clone(),
+        }),
+        Box::new(GoogleImageCommand {
+            google_searcher: google_searcher.clone(),
+        }),
+        Box::new(HoroscopeCommand {}),
+        Box::new(QuoteCommand {
+            db_pool: db_pool.clone(),
+        }),
+        Box::new(QuoteAddCommand {
+            db_pool: db_pool.clone(),
+        }),
+        Box::new(YoutubeCommand {
+            google_searcher: google_searcher.clone(),
+        }),
+    ];
 
-    let mut message_commands: Vec<Box<dyn MessageCommand>> = Vec::new();
-    message_commands.push(Box::new(ConnerieCommand {
-        bot_name: bot_name.clone(),
-        db_pool: db_pool.clone(),
-    }));
-    message_commands.push(Box::new(SkanditeCommand {
-        db_pool: db_pool.clone(),
-    }));
+    let message_commands: Vec<Box<dyn MessageCommand>> = vec![
+        Box::new(ConnerieCommand {
+            bot_name: bot_name.clone(),
+            db_pool: db_pool.clone(),
+        }),
+        Box::new(SkanditeCommand {
+            db_pool: db_pool.clone(),
+        }),
+    ];
 
     let handler = Handler {
         slash_commands,
