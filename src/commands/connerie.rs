@@ -20,7 +20,7 @@ const PROC_PERCENTAGE: u8 = 3;
 const MIN_RAND_TERMS_LENGTH: usize = 4;
 
 pub struct ConnerieCommand {
-    pub bot_name: Arc<String>,
+    pub bot_name: String,
     pub db_pool: Arc<MySqlPool>,
 }
 impl ConnerieCommand {

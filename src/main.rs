@@ -48,7 +48,6 @@ async fn main() {
         .extract()
         .unwrap();
 
-    let bot_name = Arc::new(config.bot_name);
     let db_pool = Arc::new(MySqlPool::connect(&config.database_url).await.unwrap());
 
     let google_searcher = Arc::new(GoogleSearcher {
@@ -64,7 +63,7 @@ async fn main() {
             db_pool: db_pool.clone(),
         }),
         Box::new(ConnerieCommand {
-            bot_name: bot_name.clone(),
+            bot_name: config.bot_name.clone(),
             db_pool: db_pool.clone(),
         }),
         Box::new(EightBallCommand {}),
@@ -89,7 +88,7 @@ async fn main() {
 
     let message_commands: Vec<Box<dyn MessageCommand>> = vec![
         Box::new(ConnerieCommand {
-            bot_name: bot_name.clone(),
+            bot_name: config.bot_name.clone(),
             db_pool: db_pool.clone(),
         }),
         Box::new(SkanditeCommand {
