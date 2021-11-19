@@ -7,7 +7,6 @@ use serenity::model::channel::Message;
 use serenity::model::gateway::Ready;
 use serenity::model::interactions::application_command::ApplicationCommand;
 use serenity::model::interactions::Interaction;
-use serenity::model::interactions::InteractionResponseType;
 
 pub struct Handler {
     pub slash_commands: Vec<Box<dyn SlashCommand>>,
@@ -56,6 +55,9 @@ impl EventHandler for Handler {
                 application_command.data.name, application_command.user.name
             );
 
+            // acknowledge the command
+            application_command.defer(&ctx.http).await.unwrap();
+
             for slash_command in &self.slash_commands {
                 let result = slash_command.handle(&application_command);
                 match result.await {
@@ -66,10 +68,8 @@ impl EventHandler for Handler {
                     Ok(None) => {}
                     Ok(Some(r)) => {
                         application_command
-                            .create_interaction_response(&ctx.http, |response| {
-                                response
-                                    .kind(InteractionResponseType::ChannelMessageWithSource)
-                                    .interaction_response_data(|message| message.content(r))
+                            .edit_original_interaction_response(&ctx.http, |response| {
+                                response.content(r)
                             })
                             .await
                             .unwrap();
