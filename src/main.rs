@@ -11,6 +11,7 @@ use crate::commands::youtube::YoutubeCommand;
 use crate::commands::MessageCommand;
 use crate::handler::Handler;
 use crate::utils::google::GoogleSearcher;
+use commands::meme::MemeCommand;
 use commands::quote::QuoteAddCommand;
 use commands::quote::QuoteCommand;
 use commands::SlashCommand;
@@ -38,6 +39,8 @@ struct Config {
     google_key: String,
     google_cse_id: String,
     blagues_api_token: String,
+    imgflip_username: String,
+    imgflip_password: String,
 }
 
 #[tokio::main]
@@ -75,6 +78,11 @@ async fn main() {
             google_searcher: google_searcher.clone(),
         }),
         Box::new(HoroscopeCommand {}),
+        Box::new(MemeCommand {
+            db_pool: db_pool.clone(),
+            imgflip_username: config.imgflip_username,
+            imgflip_password: config.imgflip_password,
+        }),
         Box::new(QuoteCommand {
             db_pool: db_pool.clone(),
         }),
