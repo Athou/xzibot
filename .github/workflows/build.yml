@@ -13,6 +13,8 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - uses: Swatinem/rust-cache@v1
+      - name: test
+        run: cargo test --release
       - name: build
         run: cargo build --release
       - name: store-executable
