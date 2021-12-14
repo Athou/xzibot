@@ -27,6 +27,7 @@ sqlx = { version = "0.5", features = [
     "runtime-tokio-rustls",
 ] }
 tokio = { version = "1", features = ["full"] }
+tokio-test = "0.4"
 unidecode = "0.3"
 ureq = { version = "2.3", features = ["json"] }
 url = "2.2"

@@ -49,7 +49,13 @@ impl MessageCommand for SkanditeCommand {
 
 fn normalize_url(url: &str) -> Result<String, Error> {
     let normalizer = UrlNormalizer::new(url)?;
-    let mut normalized_url = normalizer.normalize(Some(&["utm_.*"]))?;
+
+    let mut remove_params_regexes = vec!["utm_.*"];
+    if url.contains("twitter.com") {
+        remove_params_regexes.push("s");
+    }
+
+    let mut normalized_url = normalizer.normalize(Some(&remove_params_regexes))?;
     if normalized_url.ends_with('/') {
         normalized_url.pop();
     }
@@ -58,4 +64,20 @@ fn normalize_url(url: &str) -> Result<String, Error> {
 
 fn is_ignored(skandite: &Skandite) -> bool {
     skandite.url.contains("tenor.com") || skandite.url.contains("giphy.com")
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use tokio_test::assert_ok;
+
+    #[test]
+    fn normalize_twitter_url() {
+        let input = "https://twitter.com/fi_paris5/status/1470124228825526272?s=21";
+        let output = assert_ok!(normalize_url(input));
+        assert_eq!(
+            output,
+            "https://twitter.com/fi_paris5/status/1470124228825526272"
+        );
+    }
 }
