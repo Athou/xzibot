@@ -68,13 +68,12 @@ fn is_ignored(skandite: &Skandite) -> bool {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
     use tokio_test::assert_ok;
 
     #[test]
     fn normalize_twitter_url() {
         let input = "https://twitter.com/fi_paris5/status/1470124228825526272?s=21";
-        let output = assert_ok!(normalize_url(input));
+        let output = assert_ok!(super::normalize_url(input));
         assert_eq!(
             output,
             "https://twitter.com/fi_paris5/status/1470124228825526272"
