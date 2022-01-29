@@ -73,7 +73,7 @@ impl SlashCommand for HoroscopeCommand {
             .text()
             .nth(1)
             .ok_or_else(|| anyhow!("cannot extract text of node"))?;
-        Ok(Some(format!("{}{}", sign, horoscope.to_string())))
+        Ok(Some(format!("{}{}", sign, horoscope)))
     }
 }
 
