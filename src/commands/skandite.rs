@@ -51,8 +51,11 @@ fn normalize_url(url: &str) -> Result<String, Error> {
     let normalizer = UrlNormalizer::new(url)?;
 
     let mut remove_params_regexes = vec!["utm_.*"];
-    if url.contains("twitter.com") {
+    if url.contains("twitter.com/") {
         remove_params_regexes.push("s");
+    }
+    if url.contains("youtube.com/") || url.contains("youtu.be/") {
+        remove_params_regexes.push("t");
     }
 
     let mut normalized_url = normalizer.normalize(Some(&remove_params_regexes))?;
@@ -78,5 +81,19 @@ mod tests {
             output,
             "https://twitter.com/fi_paris5/status/1470124228825526272"
         );
+    }
+
+    #[test]
+    fn normalize_youtube_com_url() {
+        let input = "https://www.youtube.com/watch?v=VnxvRNbKMvA&t=36s";
+        let output = assert_ok!(super::normalize_url(input));
+        assert_eq!(output, "https://www.youtube.com/watch?v=VnxvRNbKMvA");
+    }
+
+    #[test]
+    fn normalize_youtu_be_url() {
+        let input = "https://youtu.be/VnxvRNbKMvA?t=37";
+        let output = assert_ok!(super::normalize_url(input));
+        assert_eq!(output, "https://youtu.be/VnxvRNbKMvA");
     }
 }
