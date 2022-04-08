@@ -10,7 +10,7 @@ chrono-humanize = "0.2"
 feed-rs = "1.0"
 figment = { version = "0.10", features = ["toml", "env"] }
 linked-hash-map = "0.5"
-linkify = "0.7"
+linkify = "0.8"
 normalize_url = "0.2"
 rand = "0.8"
 regex = "1.5"
