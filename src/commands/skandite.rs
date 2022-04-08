@@ -66,7 +66,9 @@ fn normalize_url(url: &str) -> Result<String, Error> {
 }
 
 fn is_ignored(skandite: &Skandite) -> bool {
-    skandite.url.contains("tenor.com") || skandite.url.contains("giphy.com")
+    skandite.url.contains("tenor.com")
+        || skandite.url.contains("giphy.com")
+        || skandite.url.contains("warcraftlogs.com")
 }
 
 #[cfg(test)]
