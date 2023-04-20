@@ -3,10 +3,10 @@ use crate::SlashCommand;
 use serenity::async_trait;
 use serenity::client::Context;
 use serenity::client::EventHandler;
+use serenity::model::application::command::Command;
+use serenity::model::application::interaction::Interaction;
 use serenity::model::channel::Message;
 use serenity::model::gateway::Ready;
-use serenity::model::interactions::application_command::ApplicationCommand;
-use serenity::model::interactions::Interaction;
 
 pub struct Handler {
     pub slash_commands: Vec<Box<dyn SlashCommand>>,
@@ -35,7 +35,7 @@ impl EventHandler for Handler {
     async fn ready(&self, ctx: Context, ready: Ready) {
         println!("{} is connected!", ready.user.name);
 
-        ApplicationCommand::set_global_application_commands(&ctx.http, |global_commands| {
+        Command::set_global_application_commands(&ctx.http, |global_commands| {
             for slash_command in &self.slash_commands {
                 global_commands.create_application_command(|application_command| {
                     slash_command.register(application_command);

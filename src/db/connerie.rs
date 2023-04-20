@@ -61,7 +61,7 @@ impl Connerie {
         } else {
             let offset = rand::thread_rng().gen_range(0..count);
             let connerie = sqlx::query_as::<_, Connerie>("SELECT * FROM Connerie LIMIT 1 OFFSET ?")
-                .bind(&offset)
+                .bind(offset)
                 .fetch_one(pool)
                 .await?;
             Ok(Some(connerie.value))

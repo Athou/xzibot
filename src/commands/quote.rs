@@ -4,11 +4,11 @@ use anyhow::anyhow;
 use anyhow::Error;
 use serenity::async_trait;
 use serenity::builder::CreateApplicationCommand;
-use serenity::model::interactions::application_command::ApplicationCommandInteractionDataOption;
-use serenity::model::interactions::application_command::ApplicationCommandInteractionDataOptionValue;
-use serenity::model::interactions::application_command::ApplicationCommandOptionType;
-use serenity::model::interactions::application_command::ApplicationCommandType;
-use serenity::model::prelude::application_command::ApplicationCommandInteraction;
+use serenity::model::application::interaction::application_command::ApplicationCommandInteraction;
+use serenity::model::prelude::command::CommandOptionType;
+use serenity::model::prelude::command::CommandType;
+use serenity::model::prelude::interaction::application_command::CommandDataOption;
+use serenity::model::prelude::interaction::application_command::CommandDataOptionValue;
 use sqlx::MySqlPool;
 use std::sync::Arc;
 
@@ -21,10 +21,7 @@ impl QuoteCommand {
         format!("{}. {}", quote.number, quote.quote)
     }
 
-    async fn trigger_get(
-        &self,
-        command: &ApplicationCommandInteractionDataOption,
-    ) -> Result<Option<String>, Error> {
+    async fn trigger_get(&self, command: &CommandDataOption) -> Result<Option<String>, Error> {
         let option = command
             .options
             .get(0)
@@ -34,7 +31,7 @@ impl QuoteCommand {
             .ok_or_else(|| anyhow!("missing command sub option value"))?;
 
         let number = match option {
-            ApplicationCommandInteractionDataOptionValue::String(s) => s,
+            CommandDataOptionValue::String(s) => s,
             _ => return Err(anyhow!("wrong value type for command sub option")),
         };
 
@@ -45,10 +42,7 @@ impl QuoteCommand {
         }
     }
 
-    async fn trigger_find(
-        &self,
-        command: &ApplicationCommandInteractionDataOption,
-    ) -> Result<Option<String>, Error> {
+    async fn trigger_find(&self, command: &CommandDataOption) -> Result<Option<String>, Error> {
         let option = command
             .options
             .get(0)
@@ -58,7 +52,7 @@ impl QuoteCommand {
             .ok_or_else(|| anyhow!("missing command sub option value"))?;
 
         let search_terms = match option {
-            ApplicationCommandInteractionDataOptionValue::String(s) => s,
+            CommandDataOptionValue::String(s) => s,
             _ => return Err(anyhow!("wrong value type for command sub option")),
         };
 
@@ -107,12 +101,12 @@ impl SlashCommand for QuoteCommand {
                 option
                     .name("get")
                     .description("trouver une citation avec son identifiant")
-                    .kind(ApplicationCommandOptionType::SubCommand)
+                    .kind(CommandOptionType::SubCommand)
                     .create_sub_option(|sub_option| {
                         sub_option
                             .name("id")
                             .description("id")
-                            .kind(ApplicationCommandOptionType::String)
+                            .kind(CommandOptionType::String)
                             .required(true)
                     })
             })
@@ -120,12 +114,12 @@ impl SlashCommand for QuoteCommand {
                 option
                     .name("find")
                     .description("trouver une citation avec des mots clés")
-                    .kind(ApplicationCommandOptionType::SubCommand)
+                    .kind(CommandOptionType::SubCommand)
                     .create_sub_option(|sub_option| {
                         sub_option
                             .name("terms")
                             .description("mots clés")
-                            .kind(ApplicationCommandOptionType::String)
+                            .kind(CommandOptionType::String)
                             .required(true)
                     })
             })
@@ -133,13 +127,13 @@ impl SlashCommand for QuoteCommand {
                 option
                     .name("random")
                     .description("une citation au hasard")
-                    .kind(ApplicationCommandOptionType::SubCommand)
+                    .kind(CommandOptionType::SubCommand)
             })
             .create_option(|option| {
                 option
                     .name("count")
                     .description("combien de citations il y a dans la base de données")
-                    .kind(ApplicationCommandOptionType::SubCommand)
+                    .kind(CommandOptionType::SubCommand)
             });
     }
 
@@ -174,9 +168,7 @@ pub struct QuoteAddCommand {
 #[async_trait]
 impl SlashCommand for QuoteAddCommand {
     fn register(&self, command: &mut CreateApplicationCommand) {
-        command
-            .name("Add Quote")
-            .kind(ApplicationCommandType::Message);
+        command.name("Add Quote").kind(CommandType::Message);
     }
 
     async fn handle(

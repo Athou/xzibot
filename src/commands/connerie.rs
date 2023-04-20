@@ -9,9 +9,9 @@ use regex::Regex;
 use serenity::async_trait;
 use serenity::builder::CreateApplicationCommand;
 use serenity::client::Context;
-use serenity::model::interactions::application_command::ApplicationCommandInteractionDataOptionValue;
-use serenity::model::interactions::application_command::ApplicationCommandOptionType;
-use serenity::model::prelude::application_command::ApplicationCommandInteraction;
+use serenity::model::application::interaction::application_command::ApplicationCommandInteraction;
+use serenity::model::prelude::command::CommandOptionType;
+use serenity::model::prelude::interaction::application_command::CommandDataOptionValue;
 use serenity::model::prelude::Message;
 use sqlx::MySqlPool;
 use std::sync::Arc;
@@ -79,7 +79,7 @@ impl SlashCommand for ConnerieCommand {
                 option
                     .name("terms")
                     .description("Que chercher ?")
-                    .kind(ApplicationCommandOptionType::String)
+                    .kind(CommandOptionType::String)
                     .required(true)
             });
     }
@@ -102,7 +102,7 @@ impl SlashCommand for ConnerieCommand {
             .ok_or_else(|| anyhow!("missing terms option value"))?;
 
         let search_terms = match option {
-            ApplicationCommandInteractionDataOptionValue::String(q) => q,
+            CommandDataOptionValue::String(q) => q,
             _ => return Err(anyhow!("wrong value type for terms option")),
         };
 

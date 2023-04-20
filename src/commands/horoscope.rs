@@ -6,9 +6,9 @@ use scraper::Html;
 use scraper::Selector;
 use serenity::async_trait;
 use serenity::builder::CreateApplicationCommand;
-use serenity::model::interactions::application_command::ApplicationCommandInteractionDataOptionValue;
-use serenity::model::interactions::application_command::ApplicationCommandOptionType;
-use serenity::model::prelude::application_command::ApplicationCommandInteraction;
+use serenity::model::application::interaction::application_command::ApplicationCommandInteraction;
+use serenity::model::prelude::command::CommandOptionType;
+use serenity::model::prelude::interaction::application_command::CommandDataOptionValue;
 
 pub struct HoroscopeCommand {}
 
@@ -22,7 +22,7 @@ impl SlashCommand for HoroscopeCommand {
                 option
                     .name("sign")
                     .description("Votre signe astrologique")
-                    .kind(ApplicationCommandOptionType::String)
+                    .kind(CommandOptionType::String)
                     .required(true);
                 for sign in build_sign_map().keys() {
                     option.add_string_choice(sign, sign);
@@ -49,7 +49,7 @@ impl SlashCommand for HoroscopeCommand {
             .ok_or_else(|| anyhow!("missing sign option value"))?;
 
         let sign = match option {
-            ApplicationCommandInteractionDataOptionValue::String(s) => s,
+            CommandDataOptionValue::String(s) => s,
             _ => return Err(anyhow!("wrong value type for sign option")),
         };
         let sign_map = build_sign_map();

@@ -42,9 +42,9 @@ impl Skandite {
             INSERT INTO Skandite (`url`, `postedDate`, `author`, `count`)
             VALUES(?, ?, ?, ?)"#,
         )
-        .bind(&url)
+        .bind(url)
         .bind(Utc::now())
-        .bind(&author)
+        .bind(author)
         .bind(1)
         .execute(pool)
         .await?;

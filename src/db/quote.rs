@@ -14,7 +14,7 @@ pub struct Quote {
 impl Quote {
     pub async fn find_by_number(pool: &MySqlPool, number: i64) -> Result<Option<Quote>, Error> {
         let quote = sqlx::query_as::<_, Quote>("SELECT * FROM Quote where number = ?")
-            .bind(&number)
+            .bind(number)
             .fetch_optional(pool)
             .await?;
         Ok(quote)
@@ -53,7 +53,7 @@ impl Quote {
         } else {
             let offset = rand::thread_rng().gen_range(0..count);
             let quote = sqlx::query_as::<_, Quote>("SELECT * FROM Quote LIMIT 1 OFFSET ?")
-                .bind(&offset)
+                .bind(offset)
                 .fetch_one(pool)
                 .await?;
             Ok(Some(quote))

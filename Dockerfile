@@ -1,4 +1,4 @@
-FROM rust:1.58.1-slim-buster as builder
+FROM rust:1.68-slim-buster as builder
 
 WORKDIR /usr/src/xzibot
 

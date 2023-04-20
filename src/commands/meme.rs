@@ -6,9 +6,9 @@ use rand::Rng;
 use serde::Deserialize;
 use serenity::async_trait;
 use serenity::builder::CreateApplicationCommand;
-use serenity::model::interactions::application_command::ApplicationCommandInteractionDataOptionValue;
-use serenity::model::interactions::application_command::ApplicationCommandOptionType;
-use serenity::model::prelude::application_command::ApplicationCommandInteraction;
+use serenity::model::application::interaction::application_command::ApplicationCommandInteraction;
+use serenity::model::prelude::command::CommandOptionType;
+use serenity::model::prelude::interaction::application_command::CommandDataOptionValue;
 use sqlx::MySqlPool;
 use std::sync::Arc;
 use unidecode::unidecode;
@@ -58,7 +58,7 @@ impl MemeCommand {
                     .as_ref()
                     .ok_or_else(|| anyhow!("missing option value"))?;
                 let option_data_text = match option_data_value {
-                    ApplicationCommandInteractionDataOptionValue::String(q) => q,
+                    CommandDataOptionValue::String(q) => q,
                     _ => return Err(anyhow!("wrong value type for terms option")),
                 };
                 let tokens: Vec<&str> = option_data_text.split(' ').collect();
@@ -87,13 +87,13 @@ impl SlashCommand for MemeCommand {
                 option
                     .name("term1")
                     .description("phrase 1 au hasard contenant ce terme")
-                    .kind(ApplicationCommandOptionType::String)
+                    .kind(CommandOptionType::String)
             })
             .create_option(|option| {
                 option
                     .name("term2")
                     .description("phrase 2 au hasard contenant ce terme")
-                    .kind(ApplicationCommandOptionType::String)
+                    .kind(CommandOptionType::String)
             });
     }
 
@@ -125,8 +125,8 @@ impl SlashCommand for MemeCommand {
                 ("username", &self.imgflip_username),
                 ("password", &self.imgflip_password),
                 ("template_id", &meme.id),
-                ("text0", &text0.unwrap_or_else(|| "".to_string())),
-                ("text1", &text1.unwrap_or_else(|| "".to_string())),
+                ("text0", &text0.unwrap_or_default()),
+                ("text1", &text1.unwrap_or_default()),
             ])?
             .into_json::<CaptionImageResponse>()?;
         let url = caption_image_response.data.url;

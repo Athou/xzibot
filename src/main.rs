@@ -22,6 +22,7 @@ use figment::Figment;
 use serde::Deserialize;
 use serenity::client::Client;
 use serenity::framework::StandardFramework;
+use serenity::prelude::GatewayIntents;
 use sqlx::MySqlPool;
 use std::sync::Arc;
 
@@ -109,7 +110,10 @@ async fn main() {
         message_commands,
     };
 
-    let mut client = Client::builder(config.discord_token)
+    let intents = GatewayIntents::GUILD_MESSAGES
+        | GatewayIntents::DIRECT_MESSAGES
+        | GatewayIntents::MESSAGE_CONTENT;
+    let mut client = Client::builder(config.discord_token, intents)
         .event_handler(handler)
         .application_id(config.discord_application_id)
         .framework(StandardFramework::new())

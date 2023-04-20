@@ -5,9 +5,9 @@ use anyhow::anyhow;
 use anyhow::Error;
 use serenity::async_trait;
 use serenity::builder::CreateApplicationCommand;
-use serenity::model::interactions::application_command::ApplicationCommandInteractionDataOptionValue;
-use serenity::model::interactions::application_command::ApplicationCommandOptionType;
-use serenity::model::prelude::application_command::ApplicationCommandInteraction;
+use serenity::model::application::interaction::application_command::ApplicationCommandInteraction;
+use serenity::model::prelude::command::CommandOptionType;
+use serenity::model::prelude::interaction::application_command::CommandDataOptionValue;
 use std::sync::Arc;
 
 pub struct GoogleImageCommand {
@@ -24,7 +24,7 @@ impl SlashCommand for GoogleImageCommand {
                 option
                     .name("terms")
                     .description("Que chercher ?")
-                    .kind(ApplicationCommandOptionType::String)
+                    .kind(CommandOptionType::String)
                     .required(true)
             });
     }
@@ -47,7 +47,7 @@ impl SlashCommand for GoogleImageCommand {
             .ok_or_else(|| anyhow!("missing terms option value"))?;
 
         let search_terms = match option {
-            ApplicationCommandInteractionDataOptionValue::String(q) => q,
+            CommandDataOptionValue::String(q) => q,
             _ => return Err(anyhow!("wrong value type for terms option")),
         };
 

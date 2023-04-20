@@ -6,9 +6,9 @@ use chrono_humanize::HumanTime;
 use serde::Deserialize;
 use serenity::async_trait;
 use serenity::builder::CreateApplicationCommand;
-use serenity::model::interactions::application_command::ApplicationCommandInteractionDataOptionValue;
-use serenity::model::interactions::application_command::ApplicationCommandOptionType;
-use serenity::model::prelude::application_command::ApplicationCommandInteraction;
+use serenity::model::application::interaction::application_command::ApplicationCommandInteraction;
+use serenity::model::prelude::command::CommandOptionType;
+use serenity::model::prelude::interaction::application_command::CommandDataOptionValue;
 
 #[derive(Deserialize)]
 struct TVMazeSearch {
@@ -48,7 +48,7 @@ impl SlashCommand for EpisodesCommand {
                 option
                     .name("tv_show")
                     .description("Le nom de la série")
-                    .kind(ApplicationCommandOptionType::String)
+                    .kind(CommandOptionType::String)
                     .required(true)
             });
     }
@@ -71,7 +71,7 @@ impl SlashCommand for EpisodesCommand {
             .ok_or_else(|| anyhow!("missing tv_show option value"))?;
 
         let search_terms = match option {
-            ApplicationCommandInteractionDataOptionValue::String(q) => q,
+            CommandDataOptionValue::String(q) => q,
             _ => return Err(anyhow!("wrong value type for tv_show option")),
         };
 

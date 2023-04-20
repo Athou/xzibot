@@ -2,7 +2,7 @@ use anyhow::Error;
 use serenity::async_trait;
 use serenity::builder::CreateApplicationCommand;
 use serenity::client::Context;
-use serenity::model::prelude::application_command::ApplicationCommandInteraction;
+use serenity::model::application::interaction::application_command::ApplicationCommandInteraction;
 use serenity::model::prelude::Message;
 
 pub mod blague;
