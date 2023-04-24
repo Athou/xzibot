@@ -53,6 +53,7 @@ fn normalize_url(url: &str) -> Result<String, Error> {
     let mut remove_params_regexes = vec!["utm_.*"];
     if url.contains("twitter.com/") {
         remove_params_regexes.push("s");
+        remove_params_regexes.push("t");
     }
     if url.contains("youtube.com/") || url.contains("youtu.be/") {
         remove_params_regexes.push("t");
@@ -77,7 +78,7 @@ mod tests {
 
     #[test]
     fn normalize_twitter_url() {
-        let input = "https://twitter.com/fi_paris5/status/1470124228825526272?s=21";
+        let input = "https://twitter.com/fi_paris5/status/1470124228825526272?s=21&t=23";
         let output = assert_ok!(super::normalize_url(input));
         assert_eq!(
             output,
