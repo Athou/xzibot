@@ -2,6 +2,9 @@ FROM rust:1.68-slim-buster as builder
 
 WORKDIR /usr/src/xzibot
 
+# https://github.com/rust-lang/cargo/issues/8719#issuecomment-1516492970
+ENV CARGO_REGISTRIES_CRATES_IO_PROTOCOL=sparse
+
 # build dependencies
 RUN USER=root cargo init
 COPY Cargo.toml Cargo.lock ./
