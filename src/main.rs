@@ -37,6 +37,7 @@ struct Config {
     database_url: String,
     discord_token: String,
     discord_application_id: u64,
+    discord_skandite_emoji_id: u64,
     google_key: String,
     google_cse_id: String,
     blagues_api_token: String,
@@ -102,6 +103,7 @@ async fn main() {
         }),
         Box::new(SkanditeCommand {
             db_pool: db_pool.clone(),
+            discord_skandite_emoji_id: config.discord_skandite_emoji_id,
         }),
     ];
 

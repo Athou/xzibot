@@ -1,17 +1,19 @@
-use crate::db::skandite::Skandite;
-use crate::utils::extract_url;
-use crate::MessageCommand;
+use std::sync::Arc;
+
 use anyhow::Error;
-use chrono_humanize::HumanTime;
 use normalize_url::normalizer::UrlNormalizer;
 use serenity::async_trait;
 use serenity::client::Context;
-use serenity::model::prelude::Message;
+use serenity::model::prelude::{EmojiId, EmojiIdentifier, Message};
 use sqlx::MySqlPool;
-use std::sync::Arc;
+
+use crate::db::skandite::Skandite;
+use crate::utils::extract_url;
+use crate::MessageCommand;
 
 pub struct SkanditeCommand {
     pub db_pool: Arc<MySqlPool>,
+    pub discord_skandite_emoji_id: u64,
 }
 
 #[async_trait]
@@ -30,15 +32,20 @@ impl MessageCommand for SkanditeCommand {
                         if skandite.author == message.author.name || is_ignored(&skandite) {
                             Ok(None)
                         } else {
+                            message
+                                .react(
+                                    _ctx,
+                                    EmojiIdentifier {
+                                        id: EmojiId(self.discord_skandite_emoji_id),
+                                        name: "skandite".to_string(),
+                                        animated: false,
+                                    },
+                                )
+                                .await?;
+
                             Skandite::increment(&self.db_pool, skandite.id).await?;
-                            let message = format!(
-                                "**Skandite!** <{}> linked {} by {} ({}x).",
-                                url,
-                                HumanTime::from(skandite.posted_date),
-                                skandite.author,
-                                skandite.count
-                            );
-                            Ok(Some(message))
+
+                            Ok(None)
                         }
                     }
                 }
