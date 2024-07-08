@@ -29,5 +29,5 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           push: true
-          platforms: linux/arm/v7
+          platforms: linux/arm/v7,linux/amd64
           tags: ghcr.io/athou/xzibot:latest
