@@ -32,6 +32,7 @@ impl ConnerieCommand {
             && message.mentions.is_empty()
             && !has_url(&message.content)
             && !contains_emoji(&message.content)
+            && !contains_spoiler(&message.content)
             && !self.mentions_me(ctx, message).await?;
         Ok(trigger)
     }
@@ -129,4 +130,8 @@ fn has_url(input: &str) -> bool {
 fn contains_emoji(input: &str) -> bool {
     let re = Regex::new(r"\p{Emoji}").unwrap();
     re.is_match(input)
+}
+
+fn contains_spoiler(input: &str) -> bool {
+    input.contains("||")
 }
